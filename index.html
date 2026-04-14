@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Torneo de Prompts Jurídicos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;padding:1.25rem 1rem;background:#f5f4f0;min-height:100vh}
+.badge{display:inline-block;background:#1a2744;color:#e8a020;font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;letter-spacing:.05em}
+.title{font-family:'Playfair Display',serif;font-size:24px;color:#222;margin:6px 0 3px}
+.sub{font-size:12px;color:#888;margin-bottom:1.25rem}
+.caso-card{background:white;border:0.5px solid #ddd;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;border-left:4px solid #1a2744}
+.caso-label{font-size:10px;font-weight:500;color:#1a2744;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.caso-text{font-size:13px;color:#222;line-height:1.7}
+.elementos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:1.25rem}
+.elem-chip{background:white;border:0.5px solid #ddd;border-radius:8px;padding:8px 10px;cursor:pointer;transition:border-color .15s,background .15s}
+.elem-chip:hover{border-color:#aaa;background:#f9f8f5}
+.elem-chip.active{border-color:#1a2744;background:#eef2f8}
+.chip-num{font-size:10px;font-weight:500;color:#aaa;margin-bottom:2px}
+.chip-name{font-size:12px;font-weight:500;color:#222}
+.chip-hint{font-size:11px;color:#888;margin-top:2px;line-height:1.4}
+.equipos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.equipo-card{background:white;border:0.5px solid #ddd;border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:8px}
+.equipo-header{display:flex;align-items:center;justify-content:space-between}
+.equipo-label{font-size:11px;font-weight:500;color:#888}
+.equipo-label.a{color:#c0392b}
+.equipo-label.b{color:#1a2744}
+.prompt-area{width:100%;min-height:110px;font-size:12px;font-family:'DM Sans',sans-serif;color:#222;background:#f8f7f3;border:0.5px solid #ddd;border-radius:8px;padding:8px;resize:vertical;outline:none;line-height:1.6}
+.prompt-area:focus{border-color:#1a2744}
+.elem-counter{font-size:10px;color:#aaa}
+.action-bar{display:flex;gap:8px;margin-bottom:1.25rem}
+.btn-primary{flex:1;background:#1a2744;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer}
+.btn-primary:hover{background:#253566}
+.btn-secondary{background:transparent;color:#888;border:0.5px solid #ccc;border-radius:8px;padding:10px 16px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer}
+.evaluacion-section{display:none}
+.eval-header{text-align:center;margin-bottom:1rem}
+.eval-title{font-family:'Playfair Display',serif;font-size:17px;color:#222;margin-bottom:4px}
+.eval-sub{font-size:12px;color:#888}
+.rubrica-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.rubrica-card{background:white;border:0.5px solid #ddd;border-radius:12px;padding:1rem}
+.rubrica-equipo{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.rubrica-equipo.a{color:#c0392b}
+.rubrica-equipo.b{color:#1a2744}
+.criterio-row{margin-bottom:8px}
+.criterio-label{font-size:11px;color:#666;margin-bottom:4px}
+.stars-row{display:flex;gap:4px}
+.star{width:22px;height:22px;border-radius:4px;border:0.5px solid #ddd;background:#f5f4f0;cursor:pointer;transition:background .1s;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa}
+.star.lit{background:#e8a020;border-color:#e8a020;color:white;font-weight:500}
+.votar-bar{display:flex;gap:10px;margin-bottom:1rem}
+.votar-btn{flex:1;padding:10px;border-radius:8px;border:1.5px solid #ddd;background:white;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;color:#444;transition:all .15s}
+.votar-btn.a.selected{border-color:#c0392b;background:#fdf2f2;color:#c0392b}
+.votar-btn.b.selected{border-color:#1a2744;background:#eef2f8;color:#1a2744}
+.votar-btn.empate.selected{border-color:#e8a020;background:#fffbea;color:#854F0B}
+.resultado-section{display:none;margin-top:1rem}
+.ganador-box{border-radius:12px;padding:1.25rem;text-align:center;margin-bottom:1rem}
+.ganador-box.a{background:#fdf2f2;border:1px solid #c0392b}
+.ganador-box.b{background:#eef2f8;border:1px solid #1a2744}
+.ganador-box.empate{background:#fffbea;border:1px solid #e8a020}
+.ganador-label{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px}
+.ganador-label.a{color:#c0392b}
+.ganador-label.b{color:#1a2744}
+.ganador-label.empate{color:#854F0B}
+.ganador-title{font-family:'Playfair Display',serif;font-size:22px;color:#222}
+.analisis-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.analisis-card{background:white;border:0.5px solid #ddd;border-radius:12px;padding:1rem}
+.analisis-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.analisis-label.a{color:#c0392b}
+.analisis-label.b{color:#1a2744}
+.analisis-prompt{font-size:11px;color:#666;line-height:1.5;margin-bottom:8px;font-style:italic;border-left:2px solid #ddd;padding-left:8px}
+.elem-tags{display:flex;flex-wrap:wrap;gap:4px}
+.elem-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:#f5f4f0;color:#888;border:0.5px solid #ddd}
+.elem-tag.present{background:#eef4ff;color:#0C447C;border-color:#85B7EB}
+.reflexion-box{background:#f5f4f0;border-left:3px solid #e8a020;padding:10px 14px;font-size:12px;color:#555;line-height:1.6;margin-bottom:1rem}
+.reflexion-box strong{display:block;font-size:11px;color:#854F0B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.reset-btn{width:100%;background:transparent;color:#888;border:0.5px solid #ccc;border-radius:8px;padding:9px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer}
+.timer-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;background:white;border:0.5px solid #ddd;border-radius:8px;padding:8px 12px}
+.timer-num{font-size:20px;font-weight:500;color:#222;min-width:40px;font-family:'Playfair Display',serif}
+.timer-num.urgent{color:#c0392b}
+.timer-track{flex:1;height:4px;background:#eee;border-radius:2px;overflow:hidden}
+.timer-fill{height:100%;background:#1a2744;border-radius:2px;transition:width .9s linear}
+.timer-fill.urgent{background:#c0392b}
+.timer-btn{font-size:11px;padding:5px 12px;border-radius:8px;border:0.5px solid #ccc;background:transparent;color:#666;cursor:pointer;font-family:'DM Sans',sans-serif}
+.section-label{font-size:12px;font-weight:500;color:#666;margin-bottom:8px}
+@media(max-width:500px){.equipos-grid,.rubrica-grid,.analisis-grid,.votar-bar{grid-template-columns:1fr;flex-direction:column}.elementos-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="badge">Prompt Engineering</div>
+<h1 class="title">Torneo de Prompts</h1>
+<p class="sub">Dos equipos, un caso, el mejor prompt gana. El grupo vota.</p>
+
+<div class="caso-card">
+  <div class="caso-label">El caso — ambos equipos trabajan sobre este</div>
+  <div class="caso-text">Tu cliente firmó un contrato de prestación de servicios como trabajador independiente, pero en los hechos cumple horario fijo, recibe órdenes directas y trabaja exclusivamente para una empresa. Lleva 3 años así y nunca recibió prestaciones. Quiere demandar. ¿Qué le dices?</div>
+</div>
+
+<div class="section-label">5 elementos de un buen prompt — haz clic para insertar en el equipo activo</div>
+<div class="elementos-grid" id="elem-grid"></div>
+
+<div class="timer-bar">
+  <div class="timer-num" id="timer-num">5:00</div>
+  <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+  <button class="timer-btn" id="timer-btn" onclick="toggleTimer()">Iniciar</button>
+</div>
+
+<div class="equipos-grid">
+  <div class="equipo-card">
+    <div class="equipo-header">
+      <div class="equipo-label a">Equipo A</div>
+      <div class="elem-counter" id="count-a">0 / 5 elementos</div>
+    </div>
+    <textarea class="prompt-area" id="prompt-a" placeholder="Escribe aquí el prompt del Equipo A..." oninput="countElems('a')"></textarea>
+  </div>
+  <div class="equipo-card">
+    <div class="equipo-header">
+      <div class="equipo-label b">Equipo B</div>
+      <div class="elem-counter" id="count-b">0 / 5 elementos</div>
+    </div>
+    <textarea class="prompt-area" id="prompt-b" placeholder="Escribe aquí el prompt del Equipo B..." oninput="countElems('b')"></textarea>
+  </div>
+</div>
+
+<div class="action-bar">
+  <button class="btn-primary" onclick="showEval()">Evaluar y votar</button>
+  <button class="btn-secondary" onclick="limpiar()">Limpiar</button>
+</div>
+
+<div class="evaluacion-section" id="eval-section">
+  <div class="eval-header">
+    <div class="eval-title">Rúbrica de evaluación</div>
+    <div class="eval-sub">Califica cada prompt del 1 al 5 en cada criterio</div>
+  </div>
+  <div class="rubrica-grid" id="rubrica-grid"></div>
+  <div class="section-label">Voto del grupo — ¿qué prompt fue más útil jurídicamente?</div>
+  <div class="votar-bar">
+    <button class="votar-btn a" id="voto-a" onclick="votar('a')">Equipo A ganó</button>
+    <button class="votar-btn empate" id="voto-empate" onclick="votar('empate')">Empate</button>
+    <button class="votar-btn b" id="voto-b" onclick="votar('b')">Equipo B ganó</button>
+  </div>
+  <div class="resultado-section" id="resultado"></div>
+</div>
+
+<script>
+const elementos=[{num:'01',name:'Rol',hint:'¿Quién es la IA?',kw:['actúa como','eres un','como abogado','especialista en','experto en']},{num:'02',name:'Contexto',hint:'Los hechos del caso',kw:['el cliente','los hechos','antecedentes','situación','contexto']},{num:'03',name:'Tarea',hint:'¿Qué quieres exactamente?',kw:['analiza','redacta','explica','identifica','dame','elabora','describe']},{num:'04',name:'Restricciones',hint:'Formato, extensión, tono',kw:['máximo','palabras','formato','lista','tabla','párrafos','tono','breve','detallado']},{num:'05',name:'Criterio',hint:'¿Cómo sabes que es bueno?',kw:['fundado en','según la ley','con base en','cita artículos','legislación mexicana','jurisprudencia']}];
+const inserts=['Actúa como abogado laboralista mexicano con experiencia en litigios ante el TFJA. ','Los hechos son los siguientes: [pega el caso aquí]. ','Analiza la viabilidad de la demanda e identifica los argumentos más sólidos. ','Responde en máximo 300 palabras, en párrafos, con tono técnico-jurídico. ','Fundamenta tu respuesta en la LFT y en criterios de la SCJN sobre subordinación.'];
+const criterios=['Claridad de la tarea','Especificidad jurídica','Contexto aportado','Utilidad práctica'];
+let activeEquipo='a',timerInterval=null,timerSeconds=300,timerRunning=false;
+const TOTAL_SECS=300;
+let scores={a:[0,0,0,0],b:[0,0,0,0]},votoActual=null;
+
+function buildElems(){const g=document.getElementById('elem-grid');g.innerHTML=elementos.map((e,i)=>`<div class="elem-chip" id="chip-${i}" onclick="insertElem(${i})"><div class="chip-num">${e.num}</div><div class="chip-name">${e.name}</div><div class="chip-hint">${e.hint}</div></div>`).join('');}
+
+function insertElem(i){const ta=document.getElementById('prompt-'+activeEquipo);const cur=ta.value;ta.value=cur+(cur&&!cur.endsWith(' ')?' ':'')+inserts[i];ta.focus();countElems(activeEquipo);const chip=document.getElementById('chip-'+i);chip.classList.add('active');setTimeout(()=>chip.classList.remove('active'),600);}
+
+document.addEventListener('click',e=>{const ta=e.target.closest('.prompt-area');if(ta){activeEquipo=ta.id==='prompt-a'?'a':'b';}});
+
+function countElems(eq){const text=document.getElementById('prompt-'+eq).value.toLowerCase();let found=0;elementos.forEach(e=>{if(e.kw.some(k=>text.includes(k.toLowerCase())))found++;});document.getElementById('count-'+eq).textContent=found+' / 5 elementos';}
+
+function detectElems(text){return elementos.map(e=>({name:e.name,present:e.kw.some(k=>text.toLowerCase().includes(k.toLowerCase()))}));}
+
+function toggleTimer(){if(timerRunning){clearInterval(timerInterval);timerRunning=false;document.getElementById('timer-btn').textContent='Reanudar';}else{timerRunning=true;document.getElementById('timer-btn').textContent='Pausar';timerInterval=setInterval(()=>{timerSeconds--;if(timerSeconds<=0){clearInterval(timerInterval);timerRunning=false;document.getElementById('timer-num').textContent='0:00';document.getElementById('timer-btn').textContent='Reiniciar';document.getElementById('timer-btn').onclick=resetTimer;return;}const m=Math.floor(timerSeconds/60);const s=timerSeconds%60;const numEl=document.getElementById('timer-num');const fillEl=document.getElementById('timer-fill');numEl.textContent=m+':'+String(s).padStart(2,'0');fillEl.style.width=Math.round((timerSeconds/TOTAL_SECS)*100)+'%';const urgent=timerSeconds<=60;numEl.className='timer-num'+(urgent?' urgent':'');fillEl.className='timer-fill'+(urgent?' urgent':'');},1000);}}
+
+function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerSeconds=TOTAL_SECS;document.getElementById('timer-num').textContent='5:00';document.getElementById('timer-num').className='timer-num';document.getElementById('timer-fill').style.width='100%';document.getElementById('timer-fill').className='timer-fill';document.getElementById('timer-btn').textContent='Iniciar';document.getElementById('timer-btn').onclick=toggleTimer;}
+
+function buildRubrica(){const g=document.getElementById('rubrica-grid');g.innerHTML=['a','b'].map(eq=>`<div class="rubrica-card"><div class="rubrica-equipo ${eq}">Equipo ${eq.toUpperCase()}</div>${criterios.map((cr,ci)=>`<div class="criterio-row"><div class="criterio-label">${cr}</div><div class="stars-row">${[1,2,3,4,5].map(n=>`<div class="star" id="star-${eq}-${ci}-${n}" onclick="setStar('${eq}',${ci},${n})">${n}</div>`).join('')}</div></div>`).join('')}</div>`).join('');}
+
+function setStar(eq,ci,val){scores[eq][ci]=val;for(let n=1;n<=5;n++){const el=document.getElementById(`star-${eq}-${ci}-${n}`);el.className='star'+(n<=val?' lit':'');}}
+
+function votar(v){votoActual=v;['a','b','empate'].forEach(x=>document.getElementById('voto-'+x).classList.remove('selected'));document.getElementById('voto-'+v).classList.add('selected');showResultado();}
+
+function showResultado(){const pa=document.getElementById('prompt-a').value.trim()||'(sin texto)';const pb=document.getElementById('prompt-b').value.trim()||'(sin texto)';const elemsA=detectElems(pa);const elemsB=detectElems(pb);const totalA=scores.a.reduce((a,b)=>a+b,0);const totalB=scores.b.reduce((a,b)=>a+b,0);const ganadorLabels={a:'Equipo A',b:'Equipo B',empate:'Empate técnico'};const reflexiones={a:'El prompt del Equipo A fue más efectivo. Revisen qué elementos incluyó que el otro omitió — ahí está la diferencia entre un asistente jurídico útil y uno genérico.',b:'El prompt del Equipo B fue más efectivo. La especificidad del rol y la claridad de la tarea son las variables que más impactan la calidad del output jurídico.',empate:'Empate — ambos prompts tuvieron fortalezas complementarias. ¿Se puede combinar lo mejor de los dos en uno solo?'};const rs=document.getElementById('resultado');rs.style.display='block';rs.innerHTML=`<div class="ganador-box ${votoActual}"><div class="ganador-label ${votoActual}">Resultado del grupo</div><div class="ganador-title">${ganadorLabels[votoActual]}</div></div><div class="analisis-grid">${['a','b'].map(eq=>{const prompt=eq==='a'?pa:pb;const elems=eq==='a'?elemsA:elemsB;const total=eq==='a'?totalA:totalB;return`<div class="analisis-card"><div class="analisis-label ${eq}">Equipo ${eq.toUpperCase()} · ${total} pts</div><div class="analisis-prompt">${prompt.slice(0,120)}${prompt.length>120?'…':''}</div><div class="elem-tags">${elems.map(e=>`<span class="elem-tag ${e.present?'present':''}">${e.present?'✓':''} ${e.name}</span>`).join('')}</div></div>`;}).join('')}</div><div class="reflexion-box"><strong>Reflexión para el grupo</strong>${reflexiones[votoActual]} Un prompt jurídico poderoso es como un escrito bien fundado: sin rol, sin hechos, sin pretensión concreta y sin criterio de calidad, el resultado es impredecible.</div><button class="reset-btn" onclick="resetTodo()">Nueva ronda</button>`;}
+
+function showEval(){buildRubrica();document.getElementById('eval-section').style.display='block';document.getElementById('eval-section').scrollIntoView({behavior:'smooth',block:'nearest'});}
+
+function limpiar(){document.getElementById('prompt-a').value='';document.getElementById('prompt-b').value='';countElems('a');countElems('b');}
+
+function resetTodo(){limpiar();scores={a:[0,0,0,0],b:[0,0,0,0]};votoActual=null;document.getElementById('eval-section').style.display='none';document.getElementById('resultado').style.display='none';document.getElementById('resultado').innerHTML='';resetTimer();window.scrollTo(0,0);}
+
+buildElems();
+</script>
+</body>
+</html>
